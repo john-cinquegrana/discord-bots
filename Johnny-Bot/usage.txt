@@ -1,0 +1,4 @@
+You do not need to compile the bot; the single command below does it all.
+
+To run the bot:
+node bot.js
