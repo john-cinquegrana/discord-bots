@@ -4,10 +4,10 @@ from discord.ext import commands
 
 # Python base libraries
 import random
+import json
 
 # Personally written files
 import text_manip
-import message_response
 
 # Personally written Cogs
 import voice
@@ -80,4 +80,6 @@ async def removenote(ctx, title):
 
 bot.add_cog( voice.MusicWIP(bot) )
 
-bot.run('NjkyNTI3Nzk5NTEyMzM0NDA2.Xnv01Q.C3LX3demkCo2A_MYCpfvX-HDcqg')
+# Read the token from private files so you buggers can't steal it anymore
+json_data = json.load( open( 'info.json' ) )
+bot.run( json_data[ 'token' ] )
