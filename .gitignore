@@ -117,6 +117,7 @@ dmypy.json
 
 # End of https://www.gitignore.io/api/code,python
 
-# Code Git Extension added files
+# User add files
 Bot-Workspace.code-workspace
 Johnny-pyBot/info.json
+**/*.txt
