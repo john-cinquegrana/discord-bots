@@ -3,12 +3,7 @@
 # Edit at https://www.gitignore.io/?templates=code,python
 
 ### Code ###
-**/.vscode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+**/.vscode/
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
@@ -120,4 +115,6 @@ dmypy.json
 # User add files
 Bot-Workspace.code-workspace
 Johnny-pyBot/info.json
+Johnny-bot/node_modules
 **/*.txt
+!**/*readme.txt
