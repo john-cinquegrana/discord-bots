@@ -18,16 +18,9 @@ class MusicWIP(commands.Cog):
         else:
             await ctx.send("Please join a voice channel")
 
-
-    @commands.command()
-    async def play(self, ctx):
-        '''plays a given url'''
-        if self.cur_client:
-            await ctx.send( "I am already in a channel (" + self.cur_channel.name + ")! I can't join another." )
-            return
-        #End of if statement
+    async def join_channel(self, ctx):
         voice_activity = ctx.message.author.voice
-        # Returns the channel that the user is sitting in, type Optional: VoiceChannel
+        # Returns the channel that the user is sitting in, type Optional: VoiceState
         if voice_activity:
             voice_channel = voice_activity.channel
             voice_client = None
@@ -39,6 +32,26 @@ class MusicWIP(commands.Cog):
                 await ctx.send("Joining voice channel: " + voice_channel.name )
         else: # User is not within a voice channel
             await ctx.send("Please join a voice channel")
+
+    @commands.command()
+    async def join(self, ctx):
+        '''joins a specific voice channel'''
+        if self.cur_client:
+            await ctx.send( "I am already in a channel (" + self.cur_channel.name + ")! I can't join another." )
+            return
+        #End of if statement
+        await self.join_channel( ctx )
+
+    @commands.command()
+    async def play(self, ctx, url):
+        '''Plays a specific url of a youtube video'''
+        if( not self.cur_client ): # We are not in a channel, we need to join one
+            await join_channel(ctx)
+        # We are now definitely in a voice channel
+        audio = discord.FFmpegOpusAudio( url )
+        self.cur_client.play( audio )
+
+        
 
     @commands.command()
     async def leave(self, ctx):
