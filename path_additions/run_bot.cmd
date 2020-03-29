@@ -1,1 +1,1 @@
-C:/Users/inver/AppData/Local/Programs/Python/Python38-32/python.exe "d:/Programming/Discord Bots/Johnny-pyBot/bot.py"
+start C:/Users/inver/AppData/Local/Programs/Python/Python38-32/python.exe "d:/Programming/Discord Bots/Johnny-pyBot/bot.py"
