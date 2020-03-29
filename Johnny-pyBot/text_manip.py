@@ -2,13 +2,14 @@ import random
 import json
 
 # Defining variables for use in the file, and reading them from json
-json_data = json.load( open( 'info.json' ) )
-path_dict = json_data[ "file-paths" ]
+with open( "info.json") as json_file:
+    json_data = json.load( json_file )
+    path_dict = json_data[ "file-paths" ]
 
-QUOTE_PATH = path_dict[ 'quotes' ]
-BOT_PATH = path_dict[ 'responses' ]
-FACT_PATH = path_dict[ 'notes' ]
-NOTE_PATH = path_dict[ 'quotes' ]
+QUOTE_PATH = path_dict[ "quotes" ]
+BOT_PATH = path_dict[ "responses" ]
+FACT_PATH = path_dict[ "notes" ]
+NOTE_PATH = path_dict[ "quotes" ]
 # NOTE - non of these files can be empty, except for the new-quotes file.
 
 def __get_random_line(file_path): #Private function

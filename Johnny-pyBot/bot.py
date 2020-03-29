@@ -81,5 +81,6 @@ async def removenote(ctx, title):
 bot.add_cog( voice.MusicWIP(bot) )
 
 # Read the token from private files so you buggers can't steal it anymore
-json_data = json.load( open( 'info.json' ) )
+with open( "info.json") as json_file:
+    json_data = json.load( json_file )
 bot.run( json_data[ 'token' ] )
