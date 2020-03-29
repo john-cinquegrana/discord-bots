@@ -28,7 +28,7 @@ The text files mentioned in the 'info.json' file should also exist. As of now th
 #### Bot commands
 This is directly copied from the /help command of the bot
 ##### MusicWIP:
-  'hello'      Says hello
+'hello'      Says hello
   'leave'      leaves the voice channel
   'mychannel'  returns the current voice channel your sitting in
   'play'       plays a given url
