@@ -11,19 +11,19 @@ This is my second attempt at a bot. This bot uses the [discord.py](https://disco
 ### Using the pyBot
 #### File requirements
 The pybot first and foremost requires an 'info.json' folder. A sample folder is given below. Don't give anyone access to this json folder as it holds your bot key.
-'
-{
-    "token": "your-token-here",
-    "file-paths": [
-        {
-        "responses": "bot-responses.txt",
-        "facts": "facts.txt",
-        "notes": "notes.txt",
-        "quotes": "quotes.txt"
-        }
-    ]
-}
-'
+
+'{'
+'    "token": "your-token-here",'
+'    "file-paths": ['
+'        {'
+'        "responses": "bot-responses.txt",'
+'        "facts": "facts.txt",'
+'        "notes": "notes.txt",''
+'        "quotes": "quotes.txt"'
+'        }'
+'    ]'
+'}'
+
 The text files mentioned in the 'info.json' file should also exist. As of now the code may err if they don't exist, however in some cases it may create them instead of erring (Update to be fixed soon so that none of them err).
 #### Bot commands
 This is directly copied from the /help command of the bot
