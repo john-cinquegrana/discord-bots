@@ -116,6 +116,7 @@ dmypy.json
 Bot-Workspace.code-workspace
 Johnny-Bot/auth.json
 Johnny-pyBot/info.json
+Johnny-pyBot/songs
 Johnny-bot/node_modules
 **/*.txt
 !**/*readme.txt
