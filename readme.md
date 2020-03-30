@@ -26,22 +26,28 @@ The pybot first and foremost requires an 'info.json' folder. A sample folder is 
 
 The text files mentioned in the 'info.json' file should also exist. As of now the code may err if they don't exist, however in some cases it may create them instead of erring (Update to be fixed soon so that none of them err).
 #### Bot commands
-This is directly copied from the /help command of the bot
-##### MusicWIP:
-'hello'      Says hello
-  'leave'      leaves the voice channel
-  'mychannel'  returns the current voice channel your sitting in
-  'play'       plays a given url
-##### ​No Category:
-  'addnote'    /addnote <title> <note>. Adds a certain note into the dictionary.
-  'addquote'   Adds a quote to the collection of the bot, stored in a text file
-  'getfact'    Gets a random fact from the bots stored collection
-  'getnote'    Returns the note from the dictionary indicated by title
-  'getquote'   Gets a random quote from the bots stored collection
-  'help'       Shows this message
-  'removenote' Removes the note given by the specific title
-  'roll'       Gives a random number between 1 and the inputed number
-  'speak'      Makes the bot say a random thing
+This is directly copied from the /help command of the bot   
+##### Music:   
+  clearqueue    
+  leave      leaves the voice channel, doesn't clear queue   
+  mychannel  returns the current voice channel your sitting in   
+  pause      Pauses the current song for replay   
+  play       Plays a specific youtube video's audio by its URL   
+  queue      Prints out the current queue of songs in order   
+  resume     Resumes a song that was previously paused.  
+  skip       Skips the current song and plays the next song in the queue. 
+  volume     Sets the server-wide volume of the bot. (Float value from 0 - 10)   
+​##### No Category:   
+  addnote    /addnote <title> <note>. Adds a certain note into the dictionary.   
+  addquote   Adds a quote to the collection of the bot, stored in a text file   
+  getfact    Gets a random fact from the bots stored collection   
+  getnote    Returns the note from the dictionary indicated by title   
+  getquote   Gets a random quote from the bots stored collection   
+  help       Shows this message   
+  killbot    Kills the bot, and makes him offline   
+  removenote Removes the note given by the specific title   
+  roll       Gives a random number between 1 and the inputed number   
+  speak      Makes the bot say a random thing   
 ## TABot
 Outside of discord I'm currently a Teacher's Assistant at Stevens Institute of Technology. Due to the coronovirus all classes went online. This bot was created with the purpose of managing students in and out of a voice channel, with a residing TA or professor, with organization and efficiency. The bot is no where near finished, it's barely even started.
 I hope to add the functionality of queing students for a spot in the TA's voice chat, moving students in and out, and providing a proper suite of commands for organization of these effects.

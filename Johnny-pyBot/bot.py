@@ -14,11 +14,23 @@ import voice
 
 bot = commands.Bot(command_prefix='/')
 
+# Adding in all the cogs
+
+music_cog = voice.Music(bot)
+bot.add_cog( music_cog )
+
 @bot.event
 async def on_ready():
+    music_cog.clear_song_data()
+    await music_cog.leave_channel()
     print('Bot has alived.')
 
 # General commands not within any cogs
+
+@bot.command()
+async def killbot(ctx):
+    '''Kills the bot, and makes him offline'''
+    await bot.logout()
 
 @bot.command()
 async def roll(ctx, arg: int):
@@ -75,10 +87,6 @@ async def getnote(ctx, title):
 async def removenote(ctx, title):
     '''Removes the note given by the specific title'''
     await ctx.send( text_manip.remove_note( title ) )
-
-# Adding in all the cogs
-
-bot.add_cog( voice.MusicWIP(bot) )
 
 # Read the token from private files so you buggers can't steal it anymore
 with open( "info.json") as json_file:

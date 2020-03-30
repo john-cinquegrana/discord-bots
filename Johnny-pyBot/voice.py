@@ -3,29 +3,77 @@ from discord.ext import commands
 
 import youtube_dl
 import os
-import asyncio
+import json
 from functools import partial
 
 
-class MusicWIP(commands.Cog):
+class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self._last_member = None
-        self.cur_channel = None
-        self.cur_client = None # discord.VoiceChannel to discord.VoiceClient
         self.is_playing = False # True if we are currently playing a song
         self.song_queue = [] # A list of urls for songs
 
+    def cur_client(self):
+        '''Returns the current voice_client of the bot, or none of not in channel'''
+        client_list = self.bot.voice_clients
+        if client_list: return client_list[0]
+        else:
+            return None
+
+    def cur_channel(self):
+        '''Returns the voice channel the bot is currently in, or None if not in channel'''
+        client = self.cur_client()
+        if client:
+            return client.cur_channel
+        else: return None
+
+    def is_connected(self):
+        '''Returns true if the bot is currently in a voice channel'''
+        if( self.cur_client() ): return self.cur_client().is_connected()
+        else: return False
+
+    async def leave_channel(self):
+        '''Commands a bot to leave the current channel. Also stops and deletes any playing music. Leaves the queue intact.'''
+        if( self.is_connected() ):
+            await self.cur_client().disconnect()
+
     def clear_song_data(self):
         self.song_queue = [] # Clear all of the queue
+        self.is_playing = False
         for file in os.listdir("./songs"):
             if file.endswith(".mp3"):
                 os.remove( "./songs/" + file )
 
+    async def join_channel(self, ctx):
+        '''Returns true if bot was able to join the channel'''
+        voice_activity = ctx.message.author.voice
+        # Returns the channel that the user is sitting in, type Optional: VoiceState
+        if voice_activity:
+            voice_channel = voice_activity.channel
+            voice_client = None
+            if( voice_channel == self.cur_channel() ): # We are already connected to the voice channel
+                await ctx.send( "I'm already in your chanel!" )
+                return True
+            else: # We are not already connected to the voice channel
+                await voice_channel.connect()
+                await ctx.send("Joining voice channel: " + voice_channel.name )
+                return True
+        else: # User is not within a voice channel
+            await ctx.send("Please join a voice channel")
+            return False
+
     @commands.command()
     async def clearqueue(self, ctx):
         await ctx.send( "Clearing all song data." )
-        self.clear_song_data()
+        for file in self.song_queue:
+            if os.path.isfile(file):
+                try:
+                    os.remove(file)
+                except:
+                    print( "Error: could not remove file: " + file )
+                    return
+        queue = []
 
     @commands.command()
     async def mychannel(self, ctx):
@@ -36,40 +84,6 @@ class MusicWIP(commands.Cog):
             await ctx.send("You are in voice channel: " + voice_activity.channel.name )
         else:
             await ctx.send("Please join a voice channel")
-
-    async def join_channel(self, ctx):
-        '''Returns true if bot was able to join the channel'''
-        voice_activity = ctx.message.author.voice
-        # Returns the channel that the user is sitting in, type Optional: VoiceState
-        if voice_activity:
-            voice_channel = voice_activity.channel
-            voice_client = None
-            if( voice_channel == self.cur_channel ): # We are already connected to the voice channel
-                await ctx.send( "I'm already in your chanel!" )
-                return True
-            else: # We are not already connected to the voice channel
-                self.cur_channel = voice_channel
-                self.cur_client = await voice_channel.connect()
-                await ctx.send("Joining voice channel: " + voice_channel.name )
-                return True
-        else: # User is not within a voice channel
-            await ctx.send("Please join a voice channel")
-            return False
-
-    async def leave_channel(self):
-        if( self.cur_client ):
-            await self.cur_client.disconnect()
-            self.cur_channel = None
-            self.cur_client = None
-
-    @commands.command()
-    async def join(self, ctx):
-        '''joins a specific voice channel'''
-        if self.cur_client:
-            await ctx.send( "I am already in a channel (" + self.cur_channel.name + ")! I can't join another." )
-            return
-        #End of if statement
-        await self.join_channel(ctx)
 
     def pop_song(self, ctx, old_song, e):
         '''Deletes the old song, and plays the next song.
@@ -95,14 +109,8 @@ class MusicWIP(commands.Cog):
 
     def download_song(self, url):
         '''Downloads a song url from youtube, returns the path to the download'''
-        ydl_opts = {
-            'format': 'bestaudio/best',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
-        }
+        with open( "info.json" ) as file:
+            ydl_opts = json.load( file )[ "ydl_opts" ]
 
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             print("Downloading audio now\n")
@@ -121,15 +129,17 @@ class MusicWIP(commands.Cog):
         before calling this function. Use download_song to download the song before
         calling this function to play it.'''
         print( "Playing song: " + song_path)
-        voice = self.cur_client
+        voice = self.cur_client()
 
         voice.play(discord.FFmpegPCMAudio(song_path), after=(lambda e: self.pop_song(ctx, song_path, e) ) ) # TODO
         voice.source = discord.PCMVolumeTransformer(voice.source)
-        voice.source.volume = 0.07
+        with open( "info.json", "r") as file:
+            voice.source.volume = json.load( file )[ "var" ][ "volume" ]
 
     @commands.command()
     async def play(self, ctx, url ):
-        if( not self.cur_client ): # We are not in a channel, we need to join one
+        '''Plays a specific youtube video's audio by its URL'''
+        if( not self.is_connected() ): # We are not in a channel, we need to join one
             if not await self.join_channel(ctx):
                 await ctx.send( "Cannot play the song, please joing a voice channel.")
                 return
@@ -145,6 +155,43 @@ class MusicWIP(commands.Cog):
 
     @commands.command()
     async def leave(self, ctx):
-        '''leaves the voice channel'''
-        await ctx.send( "Leaving your channel." )
+        '''leaves the voice channel, doesn't clear queue'''
+        await ctx.send( "Goodbye." )
         await self.leave_channel()
+
+    @commands.command()
+    async def queue(self, ctx):
+        '''Prints out the current queue of songs in order'''
+        for song in self.song_queue:
+            await ctx.send( "Song in queue: " + song.split("/")[1].split("-")[0] )
+
+    @commands.command()
+    async def pause(self, ctx):
+        '''Pauses the current song for replay'''
+        self.cur_client().pause()
+        await ctx.send( "Song has been paused" )
+
+    @commands.command()
+    async def resume(self, ctx):
+        '''Resumes a song that was previously paused. Currently cannot resume after a leave.'''
+        if ( self.cur_client().is_paused() ):
+            await ctx.send( "Resuming the current song" )
+            self.cur_client().resume()
+
+    @commands.command()
+    async def skip(self, ctx):
+        '''Skips the current song and plays the next song in the queue, if any.'''
+        await ctx.send( "Skipping the song" )
+        if self.is_connected() and self.is_playing:
+            self.cur_client().stop()
+            # This calls the after function of the play routine as well
+
+    @commands.command()
+    async def volume(self, ctx, vol: float):
+        '''Sets the server-wide volume of the bot. (Float value from 0 - 10)'''
+        with open( "info.json", "r" ) as file:
+            data = json.load( file )
+        data[ "var" ][ "volume" ] = vol / 10
+        with open( "info.json", "w" ) as file:
+            json.dump( data, file, indent="\t" )
+        await ctx.send( "Changed the volume to " + str(vol) + ". Change will take affect next song.")
