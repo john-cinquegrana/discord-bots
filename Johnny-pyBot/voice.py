@@ -10,9 +10,9 @@ from functools import partial
 class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self._last_member = None
         self.is_playing = False # True if we are currently playing a song
         self.song_queue = [] # A list of urls for songs
+        self.clear_song_data()
 
     def cur_client(self):
         '''Returns the current voice_client of the bot, or none of not in channel'''
@@ -65,6 +65,7 @@ class Music(commands.Cog):
 
     @commands.command()
     async def clearqueue(self, ctx):
+        '''/clearqueue.\tClears all song data as a whole.'''
         await ctx.send( "Clearing all song data." )
         for file in self.song_queue:
             if os.path.isfile(file):
@@ -74,16 +75,7 @@ class Music(commands.Cog):
                     print( "Error: could not remove file: " + file )
                     return
         queue = []
-
-    @commands.command()
-    async def mychannel(self, ctx):
-        '''returns the current voice channel your sitting in'''
-        voice_activity = ctx.message.author.voice
-        # Returns the channel that the user is sitting in, type Optional: VoiceChannel
-        if voice_activity:
-            await ctx.send("You are in voice channel: " + voice_activity.channel.name )
-        else:
-            await ctx.send("Please join a voice channel")
+        await self.leave_channel()
 
     def pop_song(self, ctx, old_song, e):
         '''Deletes the old song, and plays the next song.
@@ -138,7 +130,7 @@ class Music(commands.Cog):
 
     @commands.command()
     async def play(self, ctx, url ):
-        '''Plays a specific youtube video's audio by its URL'''
+        '''/play <youtube-url>.\tPlays a specific youtube video's audio by its URL'''
         if( not self.is_connected() ): # We are not in a channel, we need to join one
             if not await self.join_channel(ctx):
                 await ctx.send( "Cannot play the song, please joing a voice channel.")
@@ -155,32 +147,32 @@ class Music(commands.Cog):
 
     @commands.command()
     async def leave(self, ctx):
-        '''leaves the voice channel, doesn't clear queue'''
+        '''/leave.\t\tForces the bot to leave the voice channel, doesn't clear queue data'''
         await ctx.send( "Goodbye." )
         await self.leave_channel()
 
     @commands.command()
     async def queue(self, ctx):
-        '''Prints out the current queue of songs in order'''
+        '''/queue.\t\tPrints out the current queue of songs in order'''
         for song in self.song_queue:
             await ctx.send( "Song in queue: " + song.split("/")[1].split("-")[0] )
 
     @commands.command()
     async def pause(self, ctx):
-        '''Pauses the current song for replay'''
+        '''/pause.\t\tPauses the current song for replay'''
         self.cur_client().pause()
         await ctx.send( "Song has been paused" )
 
     @commands.command()
     async def resume(self, ctx):
-        '''Resumes a song that was previously paused. Currently cannot resume after a leave.'''
+        '''/resume.\tResumes a song that was previously paused. Currently cannot resume after a leave.'''
         if ( self.cur_client().is_paused() ):
             await ctx.send( "Resuming the current song" )
             self.cur_client().resume()
 
     @commands.command()
     async def skip(self, ctx):
-        '''Skips the current song and plays the next song in the queue, if any.'''
+        '''/skip.\t\tSkips the current song and plays the next song in the queue, if any.'''
         await ctx.send( "Skipping the song" )
         if self.is_connected() and self.is_playing:
             self.cur_client().stop()
@@ -188,10 +180,16 @@ class Music(commands.Cog):
 
     @commands.command()
     async def volume(self, ctx, vol: float):
-        '''Sets the server-wide volume of the bot. (Float value from 0 - 10)'''
+        '''/volume <float>.\tSets the server-wide volume of the bot. (Float value from 0 - 10)'''
         with open( "info.json", "r" ) as file:
             data = json.load( file )
         data[ "var" ][ "volume" ] = vol / 10
         with open( "info.json", "w" ) as file:
             json.dump( data, file, indent="\t" )
         await ctx.send( "Changed the volume to " + str(vol) + ". Change will take affect next song.")
+
+    def cog_unload(self):
+        print( "Unloading the voice cog" )
+        self.leave_channel()
+        self.clear_song_data()
+        pass

@@ -1,3 +1,8 @@
+# Discord imports
+import discord
+from discord.ext import commands
+
+# Standard library imports
 import random
 import json
 
@@ -84,3 +89,55 @@ def remove_note(title):
         file.write( str )
     file.close() #Close the file
     return result
+
+class Text(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.command()
+    async def speak(self, ctx):
+        '''/speak.\t\tMakes the bot say a random thing'''
+        await ctx.send( get_bot_response() )    
+
+    @commands.command()
+    async def addquote(self, ctx, *, str):
+        '''/addquote <string: quote>.\tAdds a quote to the collection of the bot, stored in a text file'''
+        add_quote(str)
+        await ctx.send( "Quote added: " + get_bot_response() )
+
+    @commands.command()
+    async def getquote(self, ctx):
+        '''/getquote.\t\tGets a random quote from the bots stored collection'''
+        await ctx.send( get_quote() )
+
+    @commands.command()
+    async def getfact(self, ctx):
+        '''/getfact.\t\tGets a random fact from the bots stored collection'''
+        await ctx.send( get_fact() )
+
+    @commands.command()
+    async def addnote(self, ctx, *, arg):
+        '''/addnote <string: title> <string: note>.\tAdds a certain note into the dictionary.'''
+        if "$" in arg:
+            (title, note) = arg.split("$")
+            if ( len(title) != 0 and len(note) != 0 ):
+                await ctx.send( add_note(title, note) )
+            else:
+                await ctx.send("Please enter a non-empty title and note.\nPlease enter a string of the format 'Title$Note'")
+        else:
+            await ctx.send("Please enter a string of the format 'Title$Note'")
+
+    @commands.command()
+    async def getnote(self, ctx, title):
+        '''/getnote <string: title>.\tReturns the note from the dictionary indicated by title'''
+        note = get_note( title )
+        if (note == ""):
+            await ctx.send("Error: title does not correspond to a note")
+        else:
+            await ctx.send("Note found, it reads:")
+            await ctx.send( note )
+
+    @commands.command()
+    async def removenote(self, ctx, title):
+        '''/removenote <string: title>.\tRemoves the note given by the specific title'''
+        await ctx.send( remove_note( title ) )
