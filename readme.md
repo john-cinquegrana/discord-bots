@@ -10,21 +10,32 @@ About an hour into creation I had the though "Someone surely made an API for thi
 This is my second attempt at a bot. This bot uses the [discord.py](https://discordpy.readthedocs.io/en/latest/index.html) python library for easy additions. The library is amazing, check it out if you have any questions. 
 ### Using the pyBot
 #### File requirements
-The pybot first and foremost requires an 'info.json' folder. A sample folder is given below. Don't give anyone access to this json folder as it holds your bot key.
+The pybot first and foremost requires an 'info.json' folder. A sample file is given below. Don't give anyone access to this json folder as it holds your bot key.
 
-{
-    "token": "your-token-here",
-    "file-paths": [
-        {
-        "responses": "bot-responses.txt",
-        "facts": "facts.txt",
-        "notes": "notes.txt",'
-        "quotes": "quotes.txt"
-        }
-    ]
-}
+{  
+	"token": "your token here",  
+	"file-paths": {  
+		"responses": "bot-responses.txt",  
+		"facts": "facts.txt",  
+		"notes": "notes.txt",  
+		"quotes": "quotes.txt"  
+	},  
+	"ydl_opts": {  
+		"format": "bestaudio/best",  
+		"postprocessors": [  
+			{  
+				"key": "FFmpegExtractAudio",  
+				"preferredcodec": "mp3",  
+				"preferredquality": "192"  
+			}  
+		]  
+	},  
+	"var": {  
+		"volume": 0.2  
+	}  
+}  
 
-The text files mentioned in the 'info.json' file should also exist. As of now the code may err if they don't exist, however in some cases it may create them instead of erring (Update to be fixed soon so that none of them err).
+The text files mentioned in the 'info.json' file should also exist. As of now the code may err if they don't exist, however in some cases it may create them instead of erring (Update to be fixed soon so that none of them err). The volume field is a float 0-1 that indicates how load music is played. It can be set by the 'volume' command.
 #### Bot commands
 This is directly copied from the /help command of the bot   
 ##### Music:   
@@ -48,6 +59,8 @@ This is directly copied from the /help command of the bot
   removenote Removes the note given by the specific title   
   roll       Gives a random number between 1 and the inputed number   
   speak      Makes the bot say a random thing   
+### Known errors with Johnny-pyBot
+If you are downloading a youtube video that is very large, the bot may timeout enough that it calls the on_ready function in the middle of downloading when a new command is run. This has the bot attempt to delete the song as it is downloading it. Keep the songs you are downloading under thirty minutes, and this shouldn't happen.
 ## TABot
 Outside of discord I'm currently a Teacher's Assistant at Stevens Institute of Technology. Due to the coronovirus all classes went online. This bot was created with the purpose of managing students in and out of a voice channel, with a residing TA or professor, with organization and efficiency. The bot is no where near finished, it's barely even started.
 I hope to add the functionality of queing students for a spot in the TA's voice chat, moving students in and out, and providing a proper suite of commands for organization of these effects.
