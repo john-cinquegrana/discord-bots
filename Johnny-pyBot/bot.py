@@ -39,6 +39,17 @@ async def roll(ctx, arg: int):
     else:
         await ctx.send( "You rolled " + str( random.randint(1, arg) ) + "!" )
 
+async def post_command( ctx ):
+    rand = random.randint(0,100)
+    if rand > 98:
+        await ctx.send( text_manip.get_bot_response() )
+    elif rand > 96:
+        await ctx.send( "Did you know that " + text_manip.get_fact() )
+    elif rand > 94:
+        await ctx.send( "You guys are so funny. Remember when we said " + text_manip.get_quote() )
+
+bot.after_invoke( coro = post_command )
+
 # Read the token from private files so you buggers can't steal it anymore
 with open( "info.json") as json_file:
     json_data = json.load( json_file )
