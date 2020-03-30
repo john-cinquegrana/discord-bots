@@ -118,5 +118,12 @@ Johnny-Bot/auth.json
 Johnny-pyBot/info.json
 Johnny-pyBot/songs
 Johnny-bot/node_modules
+
+# Over-arching file ignores
 **/*.txt
+**/*.png
+**/*.mp3
+**/*.webm
+
+# Retractions
 !**/*readme.txt

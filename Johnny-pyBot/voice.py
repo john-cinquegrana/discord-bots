@@ -154,8 +154,21 @@ class Music(commands.Cog):
     @commands.command()
     async def queue(self, ctx):
         '''/queue.\t\tPrints out the current queue of songs in order'''
+        if not self.song_queue:
+            await ctx.send( "Queue is empty" )
+            return
+        my_embed = discord.Embed(
+            title = "Song Queue",
+            description = "The songs that are about to play, in order.",
+            colour = discord.Colour.magenta()
+        )
+        song_queue = ""
+        song_num = 1
         for song in self.song_queue:
-            await ctx.send( "Song in queue: " + song.split("/")[1].split("-")[0] )
+            song_queue += str(song_num) + ". " + "-".join( song.split("/")[1].split("-")[:-1] ) + "\n"
+            song_num += 1
+        my_embed.add_field( name="Queue", value=song_queue, inline=False )
+        await ctx.send( "Here is the queue:", embed=my_embed)
 
     @commands.command()
     async def pause(self, ctx):
