@@ -13,7 +13,7 @@ with open( "info.json") as json_file:
 
 QUOTE_PATH = path_dict[ "quotes" ]
 BOT_PATH = path_dict[ "responses" ]
-FACT_PATH = path_dict[ "notes" ]
+FACT_PATH = path_dict[ "facts" ]
 NOTE_PATH = path_dict[ "quotes" ]
 # NOTE - non of these files can be empty, except for the new-quotes file.
 
@@ -99,25 +99,43 @@ class Text(commands.Cog):
         '''/speak.\t\tMakes the bot say a random thing'''
         await ctx.send( get_bot_response() )    
 
-    @commands.command()
-    async def addquote(self, ctx, *, str):
-        '''/addquote <string: quote>.\tAdds a quote to the collection of the bot, stored in a text file'''
+    @commands.group()
+    async def quote(self, ctx):
+        '''/quote <sub>.\tUsed to manipulate quotes.'''
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Run '/help quote' to see a list of valid subcommands.")
+
+    @quote.command(name="add")
+    async def quoteadd(self, ctx, *, str):
+        '''/quote add <string: quote>.\tAdds a quote to the collection of the bot, stored in a text file'''
         add_quote(str)
         await ctx.send( "Quote added: " + get_bot_response() )
 
-    @commands.command()
-    async def getquote(self, ctx):
-        '''/getquote.\t\tGets a random quote from the bots stored collection'''
+    @quote.command(name="get")
+    async def quoteget(self, ctx):
+        '''/quote get.\t\tGets a random quote from the bots stored collection'''
         await ctx.send( get_quote() )
 
-    @commands.command()
-    async def getfact(self, ctx):
-        '''/getfact.\t\tGets a random fact from the bots stored collection'''
+    @commands.group()
+    async def fact(self, ctx):
+        '''/fact <sub>.\tUsed to manipulate quotes.'''
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Run '/help fact' to see a list of valid subcommands.")
+
+    @fact.command(name="get")
+    async def factget(self, ctx):
+        '''/fact get.\t\tGets a random fact from the bots stored collection'''
         await ctx.send( get_fact() )
 
-    @commands.command()
-    async def addnote(self, ctx, *, arg):
-        '''/addnote <string: title> <string: note>.\tAdds a certain note into the dictionary.'''
+    @commands.group()
+    async def note(self, ctx):
+        '''/note <sub>.\tUsed to manipulate quotes.'''
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Run '/help note' to see a list of valid subcommands.")
+
+    @note.command(name="add")
+    async def noteadd(self, ctx, *, arg):
+        '''/note add <string: title> <string: note>.\tAdds a certain note into the dictionary.'''
         if "$" in arg:
             (title, note) = arg.split("$")
             if ( len(title) != 0 and len(note) != 0 ):
@@ -127,9 +145,9 @@ class Text(commands.Cog):
         else:
             await ctx.send("Please enter a string of the format 'Title$Note'")
 
-    @commands.command()
-    async def getnote(self, ctx, title):
-        '''/getnote <string: title>.\tReturns the note from the dictionary indicated by title'''
+    @note.command(name="get")
+    async def noteget(self, ctx, title):
+        '''/note get <string: title>.\tReturns the note from the dictionary indicated by title'''
         note = get_note( title )
         if (note == ""):
             await ctx.send("Error: title does not correspond to a note")
@@ -137,7 +155,7 @@ class Text(commands.Cog):
             await ctx.send("Note found, it reads:")
             await ctx.send( note )
 
-    @commands.command()
-    async def removenote(self, ctx, title):
-        '''/removenote <string: title>.\tRemoves the note given by the specific title'''
+    @note.command(name="remove")
+    async def noteremove(self, ctx, title):
+        '''/note remove <string: title>.\tRemoves the note given by the specific title'''
         await ctx.send( remove_note( title ) )

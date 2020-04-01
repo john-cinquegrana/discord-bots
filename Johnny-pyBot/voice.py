@@ -12,7 +12,15 @@ class Music(commands.Cog):
         self.bot = bot
         self.is_playing = False # True if we are currently playing a song
         self.song_queue = [] # A list of urls for songs
+        self.cur_song = "None"
         self.clear_song_data()
+
+    # Defining groups of the commands
+    @commands.group()
+    async def song(self, ctx):
+        '''/song <sub>.\tCommand used to interact with songs'''
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Run '/help song' to see a list of valid subcommands.")
 
     def cur_client(self):
         '''Returns the current voice_client of the bot, or none of not in channel'''
@@ -63,10 +71,11 @@ class Music(commands.Cog):
             await ctx.send("Please join a voice channel")
             return False
 
-    @commands.command()
+    @song.command()
     async def clearqueue(self, ctx):
-        '''/clearqueue.\tClears all song data as a whole.'''
+        '''/song clearqueue.\tClears all song data as a whole.'''
         await ctx.send( "Clearing all song data." )
+        self.is_playing = False
         for file in self.song_queue:
             if os.path.isfile(file):
                 try:
@@ -86,7 +95,7 @@ class Music(commands.Cog):
             print( "An error occured in the song play." )
             return
         # Assuming everything went okay
-        if os.path.isfile(old_song):
+        if os.path.isfile(old_song) and not (old_song in self.song_queue):
             try:
                 os.remove(old_song)
             except:
@@ -97,6 +106,7 @@ class Music(commands.Cog):
             next_song_path = self.song_queue.pop(0)
             self.play_song( ctx, next_song_path )
         else:
+            self.cur_song = "None"
             self.is_playing = False
 
     def download_song(self, url):
@@ -113,7 +123,12 @@ class Music(commands.Cog):
                 name = file
                 new_name = "songs/" + name
                 print( "Renaming song to: " + new_name )
-                os.rename(name, new_name)
+                if os.path.isfile(new_name):
+                    # Delete the new download, and leave the old song there
+                    os.remove( name )
+                else:
+                    # Create the new song path
+                    os.rename(name, new_name)
                 return new_name
 
     def play_song(self, ctx, song_path):
@@ -123,14 +138,15 @@ class Music(commands.Cog):
         print( "Playing song: " + song_path)
         voice = self.cur_client()
 
+        self.cur_song = "-".join( song_path.split("/")[1].split("-")[:-1] ) + "\n"
         voice.play(discord.FFmpegPCMAudio(song_path), after=(lambda e: self.pop_song(ctx, song_path, e) ) ) # TODO
         voice.source = discord.PCMVolumeTransformer(voice.source)
         with open( "info.json", "r") as file:
             voice.source.volume = json.load( file )[ "var" ][ "volume" ]
 
-    @commands.command()
-    async def play(self, ctx, url ):
-        '''/play <youtube-url>.\tPlays a specific youtube video's audio by its URL'''
+    @song.command()
+    async def play(self, ctx, url):
+        '''/song play <youtube-url>.\tPlays a specific youtube video's audio by its URL'''
         if( not self.is_connected() ): # We are not in a channel, we need to join one
             if not await self.join_channel(ctx):
                 await ctx.send( "Cannot play the song, please joing a voice channel.")
@@ -151,9 +167,9 @@ class Music(commands.Cog):
         await ctx.send( "Goodbye." )
         await self.leave_channel()
 
-    @commands.command()
+    @song.command()
     async def queue(self, ctx):
-        '''/queue.\t\tPrints out the current queue of songs in order'''
+        '''/song queue.\tPrints out the current queue of songs in order'''
         if not self.song_queue:
             await ctx.send( "Queue is empty" )
             return
@@ -170,36 +186,84 @@ class Music(commands.Cog):
         my_embed.add_field( name="Queue", value=song_queue, inline=False )
         await ctx.send( "Here is the queue:", embed=my_embed)
 
-    @commands.command()
+    @song.command()
     async def pause(self, ctx):
-        '''/pause.\t\tPauses the current song for replay'''
+        '''/song pause.\tPauses the current song for replay'''
         self.cur_client().pause()
         await ctx.send( "Song has been paused" )
 
-    @commands.command()
+    @song.command()
     async def resume(self, ctx):
-        '''/resume.\tResumes a song that was previously paused. Currently cannot resume after a leave.'''
+        '''/song resume.\tResumes a song that was previously paused. Currently cannot resume after a leave.'''
         if ( self.cur_client().is_paused() ):
             await ctx.send( "Resuming the current song" )
             self.cur_client().resume()
 
-    @commands.command()
+    @song.command()
     async def skip(self, ctx):
-        '''/skip.\t\tSkips the current song and plays the next song in the queue, if any.'''
+        '''/song skip.\tSkips the current song and plays the next song in the queue, if any.'''
         await ctx.send( "Skipping the song" )
         if self.is_connected() and self.is_playing:
             self.cur_client().stop()
             # This calls the after function of the play routine as well
+        else:
+            await ctx.send( "There's no song to skip." )
 
-    @commands.command()
+    @song.command()
     async def volume(self, ctx, vol: float):
-        '''/volume <float>.\tSets the server-wide volume of the bot. (Float value from 0 - 10)'''
+        '''/song volume <float>.\tSets the server-wide volume of the bot. (Float value from 0 - 10)'''
         with open( "info.json", "r" ) as file:
             data = json.load( file )
         data[ "var" ][ "volume" ] = vol / 10
         with open( "info.json", "w" ) as file:
             json.dump( data, file, indent="\t" )
         await ctx.send( "Changed the volume to " + str(vol) + ". Change will take affect next song.")
+
+    @song.command()
+    async def curvolume(self, ctx):
+        '''/song curvolume.\tDisplays the current server volume. (Float value from 0 - 10)'''
+        with open( "info.json", "r" ) as file:
+            data = json.load( file )
+        await ctx.send( "Current Volume is: " + str(data[ "var" ][ "volume" ]*10) )
+
+    @song.command()
+    async def current(self, ctx):
+        '''/song current.\tStates the song that is currently playing.'''
+        await ctx.send( "Currently playing: " + self.cur_song )
+
+    # Joke commands
+    async def not_admin(self, ctx):
+        '''Returns true if author of message is NOT an admin'''
+        if not ctx.author.guild_permissions.administrator:
+            await ctx.send( "Only admins can use this command." )
+            return True
+        return False
+
+
+
+    @song.command()
+    async def loop(self, ctx, url: str, num: int):
+        '''/song loop <url> <num>.\tLoops the song the given amount of times'''
+        if( num < 2 ):
+            await ctx.send( "Please pick a higher number" )
+            return
+        if( not self.is_connected() ): # We are not in a channel, we need to join one
+            if not await self.join_channel(ctx):
+                await ctx.send( "Cannot play the song, please joing a voice channel.")
+                return
+        song_path = self.download_song( url )
+        if self.is_playing:
+            await ctx.send( "Your song has been added to the queue." )
+            self.song_queue.append( song_path )
+            return
+        # We play their song right now
+        self.play_song(ctx, song_path)
+        print( "Song path is: " + song_path )
+        self.is_playing = True
+        for i in range(1, num): self.song_queue.append( song_path )
+
+
+
 
     def cog_unload(self):
         print( "Unloading the voice cog" )
