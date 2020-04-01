@@ -41,11 +41,11 @@ async def roll(ctx, arg: int):
 
 async def post_command( ctx ):
     rand = random.randint(0,100)
-    if rand > 98:
+    if rand > 95:
         await ctx.send( text_manip.get_bot_response() )
-    elif rand > 96:
+    elif rand > 93:
         await ctx.send( "Did you know that " + text_manip.get_fact() )
-    elif rand > 94:
+    elif rand > 91:
         await ctx.send( "You guys are so funny. Remember when we said " + text_manip.get_quote() )
 
 bot.after_invoke( coro = post_command )
